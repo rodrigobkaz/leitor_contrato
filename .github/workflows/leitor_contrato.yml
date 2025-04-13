@@ -1,7 +1,7 @@
 name: Rodar Leitor de Contrato
 
 on:
-  workflow_dispatch:  # permite execução manual no GitHub
+  workflow_dispatch:
 
 jobs:
   run-script:

@@ -1,7 +1,7 @@
 name: Rodar Leitor de Contrato
 
 on:
-  workflow_dispatch:  # permite executar manualmente pelo GitHub
+  workflow_dispatch:
 
 jobs:
   run-script:
@@ -21,8 +21,7 @@ jobs:
 
     - name: Instalar dependências
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r leitor_contrato/requirements.txt
 
     - name: Executar main.py
-      run: python main.py
+      run: python leitor_contrato/main.py

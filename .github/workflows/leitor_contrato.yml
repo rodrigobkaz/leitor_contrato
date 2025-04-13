@@ -1,14 +1,14 @@
-name: Python Tests
+name: Rodar Leitor de Contrato
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # permite execução manual no GitHub
 
 jobs:
-  test:
+  run-script:
     runs-on: ubuntu-latest
+
+    env:
+      HUBSPOT_API_KEY: ${{ secrets.HUBSPOT_API_KEY }}
 
     steps:
     - name: Checkout do código
@@ -23,8 +23,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest
 
-    - name: Rodar testes
-      run: |
-        pytest
+    - name: Executar processor.py
+      run: python processor.py

@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 import requests
 from datetime import datetime, timedelta
@@ -23,7 +24,7 @@ def get_file_download_url(file_id):
 
 def create_note_for_company(company_id, contrato_info):
     url = f"{BASE_URL}/crm/v3/objects/notes"
-    
+
     descricao = f"""
 📄 Contrato processado automaticamente:
 
@@ -38,7 +39,8 @@ Trecho do contrato:
 
     payload = {
         "properties": {
-            "hs_note_body": descricao.strip()
+            "hs_note_body": descricao.strip(),
+            "hs_timestamp": int(time.time() * 1000)
         },
         "associations": [
             {

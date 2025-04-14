@@ -1,4 +1,3 @@
-
 from leitor_contrato.hubspot_client import get_file_download_url
 from leitor_contrato.pdf_reader import download_and_read_pdf
 from leitor_contrato.extractor import extract_contract_info
@@ -23,4 +22,13 @@ def process_contract_from_deal(deal):
         print(f"⚠️ Falha ao extrair texto do PDF do file_id: {file_id}")
         return None
 
-    return extract_contract_info(text)
+    info = extract_contract_info(text)
+    if info:
+        print("✅ Informações extraídas:")
+        print(f"- Valor: R$ {info['valor_total']}")
+        print(f"- Duração: {info['duracao_meses']} meses")
+        print(f"- Trecho: {info['snippet'][:150]}...")
+    else:
+        print("⚠️ Nenhuma informação relevante extraída.")
+
+    return info

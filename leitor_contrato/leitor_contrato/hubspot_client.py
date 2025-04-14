@@ -44,6 +44,7 @@ Trecho do contrato:
         }
     }
 
+    # Cria a nota
     response = requests.post(url, headers=HEADERS, json=note_payload)
     if not response.ok:
         print(f"❌ Erro ao criar nota: {response.status_code}, {response.text}")
@@ -52,9 +53,15 @@ Trecho do contrato:
     note_id = response.json().get("id")
     print(f"✅ Nota criada com ID: {note_id}")
 
-    # ✅ Endpoint correto para associação: API v4
-    assoc_url = f"{BASE_URL}/crm/v4/associations/notes/{note_id}/to/companies/{company_id}/type/202"
-    assoc_response = requests.put(assoc_url, headers=HEADERS)
+    # PATCH: Associa nota à empresa via companyIds
+    assoc_url = f"{BASE_URL}/crm/v3/objects/notes/{note_id}"
+    assoc_payload = {
+        "associations": {
+            "companyIds": [company_id]
+        }
+    }
+
+    assoc_response = requests.patch(assoc_url, headers=HEADERS, json=assoc_payload)
 
     if not assoc_response.ok:
         print(f"❌ Erro ao associar nota à empresa {company_id}: status={assoc_response.status_code}, body={assoc_response.text}")

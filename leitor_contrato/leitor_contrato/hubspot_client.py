@@ -24,20 +24,23 @@ def get_file_download_url(file_id):
 
 def create_note_for_company(company_id, contrato_info):
     url = f"{BASE_URL}/engagements/v1/engagements"
-
     timestamp = int(time.time() * 1000)
 
     descricao = f"""
-📄 Contrato processado automaticamente:
+📄 *Análise Automatizada do Contrato*
 
-- Duração: {contrato_info.get("duracao_meses", "N/A")} meses
-- Valor Total: R$ {contrato_info.get("valor_total", "N/A")}
+💰 Valor Total.............: R$ {contrato_info.get("valor_total", "não encontrado")}
+📆 Duração do Contrato.....: {contrato_info.get("duracao_meses", "não encontrada")} meses
+🔒 Fidelidade..............: {contrato_info.get("fidelidade", "não encontrada")}
+📈 Reajuste................: {contrato_info.get("reajuste", "não encontrado")}
+⚠ Inadimplência............: {contrato_info.get("inadimplencia", "não encontrada")}
+📬 Aviso Prévio............: {contrato_info.get("prazo_cancelamento", "não encontrado")}
 
-Trecho do contrato:
-{contrato_info.get("snippet", "")}
+📝 *Trecho relevante do contrato*:
+{contrato_info.get("snippet", "[sem trecho]")}
 
 (Análise gerada via GitHub Actions 🚀)
-"""
+""".strip()
 
     payload = {
         "engagement": {
@@ -49,7 +52,7 @@ Trecho do contrato:
             "companyIds": [company_id]
         },
         "metadata": {
-            "body": descricao.strip()
+            "body": descricao
         }
     }
 

@@ -45,7 +45,12 @@ Trecho do contrato:
         "associations": [
             {
                 "to": {"id": company_id},
-                "types": [{"associationCategory": "HUBSPOT_DEFINED", "associationTypeId": 1}]
+                "types": [
+                    {
+                        "associationCategory": "HUBSPOT_DEFINED",
+                        "associationTypeId": 202  # Correto: Empresa para Nota
+                    }
+                ]
             }
         ]
     }

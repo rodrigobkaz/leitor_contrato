@@ -12,6 +12,14 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
+def get_file_download_url(file_id):
+    url = f"{BASE_URL}/files/v3/files/{file_id}"
+    response = requests.get(url, headers=HEADERS)
+    if not response.ok:
+        print(f"Erro ao obter metadados do arquivo {file_id}: {response.text}")
+        return None
+    return response.json().get("url")
+
 def create_note_for_company(company_id, contrato_info):
     url = f"{BASE_URL}/crm/v3/objects/notes"
     

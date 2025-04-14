@@ -1,4 +1,4 @@
-from PyPDF2 import PdfReader
+import pdfplumber
 import tempfile
 import os
 import requests
@@ -19,11 +19,29 @@ def download_and_read_pdf(url):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(response.content)
         tmp.flush()
+        text = []
+
         try:
-            reader = PdfReader(tmp.name)
-            return "\n".join([p.extract_text() for p in reader.pages if p.extract_text()])
+            with pdfplumber.open(tmp.name) as pdf:
+                for page in pdf.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text.append(extracted)
+            
+            full_text = "\n".join(text)
+            return normalize_text(full_text) if full_text else None
+
         except Exception as e:
-            print(f"⚠️ Erro ao ler PDF: {e}")
+            print(f"⚠️ Erro ao ler PDF com pdfplumber: {e}")
             return None
+
         finally:
             os.unlink(tmp.name)
+
+def normalize_text(text):
+    """
+    Remove espaços duplicados, quebra de linhas desnecessárias, e normaliza o texto.
+    """
+    lines = text.splitlines()
+    lines = [line.strip() for line in lines if line.strip()]
+    return "\n".join(lines)

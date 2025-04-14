@@ -1,13 +1,36 @@
-
 import re
 
 def extract_contract_info(text):
     if not text:
         return None
-    duracao_match = re.search(r"(?:Duração|Duracao).*?(\d{1,2})\s*meses", text, re.IGNORECASE)
-    valor_match = re.search(r"(?:R\$\s?|Valor total).*?(\d+[\.,]\d{2,})", text)
+
+    duracao, duracao_context = extract_duracao(text)
+    valor, valor_context = extract_valor(text)
+
     return {
-        "duracao_meses": int(duracao_match.group(1)) if duracao_match else None,
-        "valor_total": valor_match.group(1).replace(",", ".") if valor_match else None,
-        "snippet": text[:400]
+        "duracao_meses": duracao,
+        "valor_total": valor,
+        "snippet": build_snippet(text, duracao_context or valor_context)
     }
+
+def extract_duracao(text):
+    padroes_duracao = [
+        r"(?:vig[eê]ncia|dura[cç][aã]o|prazo).*?(\d{1,2})\s*(?:meses|mês|mes)",
+        r"(\d{1,2})\s*(?:meses|mês|mes)\s*(?:de)?\s*(?:vig[eê]ncia|dura[cç][aã]o|prazo)"
+    ]
+    for padrao in padroes_duracao:
+        match = re.search(padrao, text, flags=re.IGNORECASE)
+        if match:
+            return int(match.group(1)), match.group(0)
+    return None, None
+
+def extract_valor(text):
+    padroes_valor = [
+        r"(?:valor\s*(?:total)?|R\$)\s*[:\-]?\s*(R\$)?\s?(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})",
+        r"(R\$)?\s?(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})\s*(?:reais|BRL)?"
+    ]
+    for padrao in padroes_valor:
+        match = re.search(padrao, text, flags=re.IGNORECASE)
+        if match:
+            valor_bruto = match.group(2).replace('.', '').replace(',', '.')
+            return valor_bruto, match_

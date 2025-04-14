@@ -2,3 +2,5 @@ requests
 PyPDF2
 python-dotenv
 pdfplumber
+spacy>=3.7.0
+

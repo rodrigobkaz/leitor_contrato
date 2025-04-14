@@ -1,4 +1,4 @@
-from leitor_contrato.hubspot_client import get_deals
+from leitor_contrato.hubspot_client import search_recent_closed_deals as get_deals
 from leitor_contrato.processor import process_contract_from_deal
 
 def main():

@@ -44,7 +44,6 @@ Trecho do contrato:
         }
     }
 
-    # Cria a nota
     response = requests.post(url, headers=HEADERS, json=note_payload)
     if not response.ok:
         print(f"❌ Erro ao criar nota: {response.status_code}, {response.text}")
@@ -53,9 +52,12 @@ Trecho do contrato:
     note_id = response.json().get("id")
     print(f"✅ Nota criada com ID: {note_id}")
 
-    # PATCH: Associa nota à empresa via companyIds
+    # PATCH com propriedades + associação à empresa
     assoc_url = f"{BASE_URL}/crm/v3/objects/notes/{note_id}"
     assoc_payload = {
+        "properties": {
+            "hs_note_body": descricao.strip()  # necessário para não dar erro 400
+        },
         "associations": {
             "companyIds": [company_id]
         }

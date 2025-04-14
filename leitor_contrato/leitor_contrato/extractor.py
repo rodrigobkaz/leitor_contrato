@@ -33,4 +33,15 @@ def extract_valor(text):
         match = re.search(padrao, text, flags=re.IGNORECASE)
         if match:
             valor_bruto = match.group(2).replace('.', '').replace(',', '.')
-            return valor_bruto, match_
+            return valor_bruto, match.group(0)
+    return None, None
+
+def build_snippet(text, contexto):
+    if not contexto:
+        return text[:400]
+    index = text.lower().find(contexto.lower())
+    if index == -1:
+        return text[:400]
+    start = max(index - 100, 0)
+    end = min(index + 300, len(text))
+    return text[start:end].strip()

@@ -23,7 +23,9 @@ def get_file_download_url(file_id):
     return data.get("url")
 
 def create_note_for_company(company_id, contrato_info):
-    url = f"{BASE_URL}/crm/v3/objects/notes"
+    url = f"{BASE_URL}/engagements/v1/engagements"
+
+    timestamp = int(time.time() * 1000)
 
     descricao = f"""
 📄 Contrato processado automaticamente:
@@ -37,38 +39,26 @@ Trecho do contrato:
 (Análise gerada via GitHub Actions 🚀)
 """
 
-    note_payload = {
-        "properties": {
-            "hs_note_body": descricao.strip(),
-            "hs_timestamp": int(time.time() * 1000)
-        }
-    }
-
-    response = requests.post(url, headers=HEADERS, json=note_payload)
-    if not response.ok:
-        print(f"❌ Erro ao criar nota: {response.status_code}, {response.text}")
-        return
-
-    note_id = response.json().get("id")
-    print(f"✅ Nota criada com ID: {note_id}")
-
-    # PATCH com propriedades + associação à empresa
-    assoc_url = f"{BASE_URL}/crm/v3/objects/notes/{note_id}"
-    assoc_payload = {
-        "properties": {
-            "hs_note_body": descricao.strip()  # necessário para não dar erro 400
+    payload = {
+        "engagement": {
+            "active": True,
+            "type": "NOTE",
+            "timestamp": timestamp
         },
         "associations": {
             "companyIds": [company_id]
+        },
+        "metadata": {
+            "body": descricao.strip()
         }
     }
 
-    assoc_response = requests.patch(assoc_url, headers=HEADERS, json=assoc_payload)
+    response = requests.post(url, headers=HEADERS, json=payload)
 
-    if not assoc_response.ok:
-        print(f"❌ Erro ao associar nota à empresa {company_id}: status={assoc_response.status_code}, body={assoc_response.text}")
+    if not response.ok:
+        print(f"❌ Erro ao criar nota (engagement) para empresa {company_id}: {response.status_code}, {response.text}")
     else:
-        print(f"📝 Nota associada com sucesso à empresa {company_id}.")
+        print(f"📝 Nota visível criada com sucesso para a empresa {company_id}.")
 
 def search_recent_closed_deals():
     url = f"{BASE_URL}/crm/v3/objects/deals/search"

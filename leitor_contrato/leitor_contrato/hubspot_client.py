@@ -26,6 +26,9 @@ def create_note_for_company(company_id, contrato_info):
     url = f"{BASE_URL}/engagements/v1/engagements"
     timestamp = int(time.time() * 1000)
 
+    observacoes = contrato_info.get("observacoes_finais", [])
+    observacoes_formatadas = "\n".join([f"- {obs}" for obs in observacoes]) if observacoes else "Nenhuma observação automática gerada."
+
     descricao = f"""
 📄 *Análise Automatizada do Contrato*
 
@@ -35,12 +38,20 @@ def create_note_for_company(company_id, contrato_info):
 📈 Reajuste................: {contrato_info.get("reajuste", "não encontrado")}
 ⚠ Inadimplência............: {contrato_info.get("inadimplencia", "não encontrada")}
 📬 Aviso Prévio............: {contrato_info.get("prazo_cancelamento", "não encontrado")}
+💣 Multa Rescisória........: {contrato_info.get("multa_rescisoria", "não encontrada")}
 
 📝 *Trecho relevante do contrato*:
 {contrato_info.get("snippet", "[sem trecho]")}
 
-(Análise gerada via GitHub Actions 🚀)
+📌 *Observações finais*:
+{observacoes_formatadas}
+
+🚀 Análise gerada via RevOps - R B K ! 🚀
 """.strip()
+
+    print("\n📤 Enviando a seguinte nota para a empresa:")
+    print(f"🏢 Company ID: {company_id}")
+    print(f"📝 Conteúdo:\n{'-'*80}\n{descricao}\n{'-'*80}\n")
 
     payload = {
         "engagement": {
@@ -61,7 +72,7 @@ def create_note_for_company(company_id, contrato_info):
     if not response.ok:
         print(f"❌ Erro ao criar nota (engagement) para empresa {company_id}: {response.status_code}, {response.text}")
     else:
-        print(f"📝 Nota visível criada com sucesso para a empresa {company_id}.")
+        print(f"✅ Nota visível criada com sucesso para a empresa {company_id}.")
 
 def search_recent_closed_deals():
     url = f"{BASE_URL}/crm/v3/objects/deals/search"

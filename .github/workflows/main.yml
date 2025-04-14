@@ -23,5 +23,8 @@ jobs:
       run: |
         pip install -r leitor_contrato/requirements.txt
 
+    - name: Baixar modelo spaCy pt_core_news_sm
+      run: python -m spacy download pt_core_news_sm
+
     - name: Executar main.py
       run: python leitor_contrato/main.py

@@ -9,7 +9,7 @@ load_dotenv()
 API_KEY = os.getenv("HUBSPOT_API_KEY")
 BASE_URL = "https://api.hubapi.com"
 HEADERS = {
-    "Authorization": f"Bearer {API_KEY}",
+    "Authorization": f"Bearer " + API_KEY,
     "Content-Type": "application/json"
 }
 
@@ -44,8 +44,13 @@ Trecho do contrato:
         },
         "associations": [
             {
-                "toObjectId": company_id,
-                "associationTypeId": 202  # Empresa para nota
+                "to": { "id": company_id },
+                "types": [
+                    {
+                        "associationCategory": "HUBSPOT_DEFINED",
+                        "associationTypeId": 202  # empresa → nota
+                    }
+                ]
             }
         ]
     }

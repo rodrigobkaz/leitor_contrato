@@ -42,17 +42,9 @@ Trecho do contrato:
             "hs_note_body": descricao.strip(),
             "hs_timestamp": int(time.time() * 1000)
         },
-        "associations": [
-            {
-                "to": {"id": company_id},
-                "types": [
-                    {
-                        "associationCategory": "HUBSPOT_DEFINED",
-                        "associationTypeId": 202  # Correto: Empresa para Nota
-                    }
-                ]
-            }
-        ]
+        "associations": {
+            "companyIds": [company_id]
+        }
     }
 
     response = requests.post(url, headers=HEADERS, json=payload)

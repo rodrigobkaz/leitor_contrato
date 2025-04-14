@@ -86,4 +86,6 @@ def get_associated_company_id(deal_id):
         print(f"Erro ao buscar empresa associada ao deal {deal_id}: {response.text}")
         return None
     results = response.json().get("results", [])
-    return results[0]["id"] if results else None
+    if not results:
+        return None
+    return results[0].get("toObjectId")

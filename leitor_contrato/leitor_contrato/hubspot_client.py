@@ -23,7 +23,6 @@ def get_file_download_url(file_id):
     return data.get("url")
 
 def create_note_for_company(company_id, contrato_info):
-    # 1. Criar a nota
     url = f"{BASE_URL}/crm/v3/objects/notes"
 
     descricao = f"""
@@ -47,18 +46,18 @@ Trecho do contrato:
 
     response = requests.post(url, headers=HEADERS, json=note_payload)
     if not response.ok:
-        print(f"❌ Erro ao criar nota: {response.text}")
+        print(f"❌ Erro ao criar nota: {response.status_code}, {response.text}")
         return
 
     note_id = response.json().get("id")
     print(f"✅ Nota criada com ID: {note_id}")
 
-    # 2. Associar nota à empresa (associationTypeId 202 = empresa → nota)
+    # Associar nota à empresa (empresa -> nota)
     assoc_url = f"{BASE_URL}/crm/v4/objects/notes/{note_id}/associations/companies/{company_id}/202"
     assoc_response = requests.put(assoc_url, headers=HEADERS)
 
     if not assoc_response.ok:
-        print(f"❌ Erro ao associar nota à empresa {company_id}: {assoc_response.text}")
+        print(f"❌ Erro ao associar nota à empresa {company_id}: status={assoc_response.status_code}, body={assoc_response.text}")
     else:
         print(f"📝 Nota associada com sucesso à empresa {company_id}.")
 
@@ -82,7 +81,7 @@ def search_recent_closed_deals():
 
     response = requests.post(url, headers=HEADERS, json=payload)
     if not response.ok:
-        print(f"Erro ao buscar negócios fechados: {response.text}")
+        print(f"Erro ao buscar negócios fechados: {response.status_code}, {response.text}")
         return []
 
     return response.json().get("results", [])
@@ -91,7 +90,7 @@ def get_associated_company_id(deal_id):
     url = f"{BASE_URL}/crm/v4/objects/deals/{deal_id}/associations/companies"
     response = requests.get(url, headers=HEADERS)
     if not response.ok:
-        print(f"Erro ao buscar empresa associada ao deal {deal_id}: {response.text}")
+        print(f"Erro ao buscar empresa associada ao deal {deal_id}: {response.status_code}, {response.text}")
         return None
     results = response.json().get("results", [])
     if not results:

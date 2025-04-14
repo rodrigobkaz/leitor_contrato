@@ -22,7 +22,6 @@ def main():
         if result:
             print_relatorio_contrato(deal["id"], result)
 
-            # Obtem empresa associada
             company_id = get_associated_company_id(deal["id"])
             if company_id:
                 print(f"🏢 Empresa associada ao deal: {company_id}")
@@ -40,9 +39,19 @@ def print_relatorio_contrato(deal_id, info):
     print(f"✅ Reajuste.................: {info.get('reajuste') or 'não encontrado'}")
     print(f"✅ Inadimplência............: {info.get('inadimplencia') or 'não encontrada'}")
     print(f"✅ Aviso prévio.............: {info.get('prazo_cancelamento') or 'não encontrado'}")
+    print(f"✅ Multa rescisória.........: {info.get('multa_rescisoria') or 'não encontrada'}")
 
     print("\n📝 Trecho relevante:")
     print(info.get('snippet', '[sem trecho]'))
+
+    print("\n📌 Observações finais:")
+    observacoes = info.get("observacoes_finais", [])
+    if observacoes:
+        for obs in observacoes:
+            print(f"- {obs}")
+    else:
+        print("Nenhuma observação automática gerada.")
+
     print("-" * 80)
 
 if __name__ == "__main__":

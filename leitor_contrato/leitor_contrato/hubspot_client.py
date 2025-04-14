@@ -42,9 +42,12 @@ Trecho do contrato:
             "hs_note_body": descricao.strip(),
             "hs_timestamp": int(time.time() * 1000)
         },
-        "associations": {
-            "companyIds": [company_id]
-        }
+        "associations": [
+            {
+                "toObjectId": company_id,
+                "associationTypeId": 202  # Empresa para nota
+            }
+        ]
     }
 
     response = requests.post(url, headers=HEADERS, json=payload)

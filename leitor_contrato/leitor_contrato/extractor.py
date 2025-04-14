@@ -2,7 +2,6 @@ import re
 import spacy
 from spacy.matcher import Matcher
 
-# Carrega modelo do spaCy (use no setup local: python -m spacy download pt_core_news_sm)
 nlp = spacy.load("pt_core_news_sm")
 
 def extract_contract_info(text):
@@ -11,11 +10,9 @@ def extract_contract_info(text):
 
     doc = nlp(text)
 
-    # Regex tradicionais
     duracao, duracao_context = extract_duracao(text)
     valor, valor_context = extract_valor(text)
 
-    # Matcher do spaCy
     matcher = Matcher(nlp.vocab)
     add_matcher_patterns(matcher)
     matches = matcher(doc)
@@ -24,7 +21,8 @@ def extract_contract_info(text):
         "prazo_cancelamento": None,
         "inadimplencia": None,
         "fidelidade": None,
-        "reajuste": None
+        "reajuste": None,
+        "multa_rescisoria": None
     }
 
     for match_id, start, end in matches:
@@ -32,6 +30,21 @@ def extract_contract_info(text):
         label = nlp.vocab.strings[match_id]
         if clausulas.get(label) is None:
             clausulas[label] = span.text.strip()
+
+    # Observações automatizadas
+    observacoes = []
+    if duracao:
+        observacoes.append(f"Contrato com duração mínima de {duracao} meses.")
+    if valor:
+        observacoes.append(f"Valor total identificado: R$ {valor}.")
+    if clausulas.get("fidelidade"):
+        observacoes.append("Cláusula de fidelidade detectada.")
+    if clausulas.get("multa_rescisoria"):
+        observacoes.append("Penalidade por rescisão antecipada detectada.")
+    if clausulas.get("reajuste"):
+        observacoes.append("Cláusula de reajuste identificada.")
+    if clausulas.get("prazo_cancelamento"):
+        observacoes.append("Cláusula de aviso prévio para cancelamento detectada.")
 
     return {
         "duracao_meses": duracao,
@@ -41,32 +54,42 @@ def extract_contract_info(text):
         "inadimplencia": clausulas.get("inadimplencia"),
         "fidelidade": clausulas.get("fidelidade"),
         "reajuste": clausulas.get("reajuste"),
-        "snippet": build_snippet(text, duracao_context or valor_context)
+        "multa_rescisoria": clausulas.get("multa_rescisoria"),
+        "snippet": build_snippet(text, duracao_context or valor_context),
+        "observacoes_finais": observacoes
     }
 
 def add_matcher_patterns(matcher):
     matcher.add("prazo_cancelamento", [[{"LOWER": {"IN": ["aviso", "notificação"]}}, {"LOWER": "prévio"}]])
     matcher.add("inadimplencia", [[{"LOWER": "inadimplência"}], [{"LOWER": "inadimplemento"}]])
-    matcher.add("fidelidade", [[{"LOWER": "reduzidos"}], [{"LOWER": "redução"}]])
+    matcher.add("fidelidade", [[{"LOWER": "reduzidos"}], [{"LOWER": "redução"}], [{"LOWER": "fidelidade"}]])
     matcher.add("reajuste", [[{"LOWER": "reajuste"}], [{"LOWER": "igp-m"}], [{"LOWER": "índice"}]])
+    matcher.add("multa_rescisoria", [
+        [{"LOWER": "multa"}, {"LOWER": "não"}, {"LOWER": "compensatória"}],
+        [{"LOWER": "multa"}, {"IS_DIGIT": True}, {"LOWER": "%"}],
+        [{"LOWER": "rescisão"}, {"LOWER": "antes"}, {"LOWER": "do"}],
+        [{"LOWER": "incorrerá"}, {"LOWER": "em"}, {"LOWER": "multa"}]
+    ])
 
 def extract_duracao(text):
-    padroes_duracao = [
+    padroes = [
         r"(?:vig[eê]ncia|dura[cç][aã]o|prazo).*?(\d{1,2})\s*(?:meses|mês|mes)",
-        r"(\d{1,2})\s*(?:meses|mês|mes)\s*(?:de)?\s*(?:vig[eê]ncia|dura[cç][aã]o|prazo)"
+        r"(\d{1,2})\s*(?:meses|mês|mes).*?(?:vig[eê]ncia|dura[cç][aã]o|prazo)",
+        r"antes dos (\d{1,2}) primeiros meses",
+        r"durante os (\d{1,2}) primeiros meses"
     ]
-    for padrao in padroes_duracao:
+    for padrao in padroes:
         match = re.search(padrao, text, flags=re.IGNORECASE)
         if match:
             return int(match.group(1)), match.group(0)
     return None, None
 
 def extract_valor(text):
-    padroes_valor = [
-        r"(?:valor\s*(?:total)?|R\$)\s*[:\-]?\s*(R\$)?\s?(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})",
+    padroes = [
+        r"(?:valor\s*(?:total)?|R\$|ANUIDADE FIXA)\s*[:\-]?\s*(R\$)?\s?(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})",
         r"(R\$)?\s?(\d{1,3}(?:[\.,]\d{3})*[\.,]\d{2})\s*(?:reais|BRL)?"
     ]
-    for padrao in padroes_valor:
+    for padrao in padroes:
         match = re.search(padrao, text, flags=re.IGNORECASE)
         if match:
             valor_bruto = match.group(2).replace('.', '').replace(',', '.')

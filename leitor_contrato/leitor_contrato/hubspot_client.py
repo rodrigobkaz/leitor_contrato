@@ -9,7 +9,7 @@ load_dotenv()
 API_KEY = os.getenv("HUBSPOT_API_KEY")
 BASE_URL = "https://api.hubapi.com"
 HEADERS = {
-    "Authorization": f"Bearer " + API_KEY,
+    "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json"
 }
 
@@ -23,6 +23,7 @@ def get_file_download_url(file_id):
     return data.get("url")
 
 def create_note_for_company(company_id, contrato_info):
+    # 1. Criar a nota
     url = f"{BASE_URL}/crm/v3/objects/notes"
 
     descricao = f"""
@@ -37,29 +38,29 @@ Trecho do contrato:
 (Análise gerada via GitHub Actions 🚀)
 """
 
-    payload = {
+    note_payload = {
         "properties": {
             "hs_note_body": descricao.strip(),
             "hs_timestamp": int(time.time() * 1000)
-        },
-        "associations": [
-            {
-                "to": { "id": company_id },
-                "types": [
-                    {
-                        "associationCategory": "HUBSPOT_DEFINED",
-                        "associationTypeId": 202  # empresa → nota
-                    }
-                ]
-            }
-        ]
+        }
     }
 
-    response = requests.post(url, headers=HEADERS, json=payload)
+    response = requests.post(url, headers=HEADERS, json=note_payload)
     if not response.ok:
-        print(f"Erro ao criar nota para a empresa {company_id}: {response.text}")
+        print(f"❌ Erro ao criar nota: {response.text}")
+        return
+
+    note_id = response.json().get("id")
+    print(f"✅ Nota criada com ID: {note_id}")
+
+    # 2. Associar nota à empresa (associationTypeId 202 = empresa → nota)
+    assoc_url = f"{BASE_URL}/crm/v4/objects/notes/{note_id}/associations/companies/{company_id}/202"
+    assoc_response = requests.put(assoc_url, headers=HEADERS)
+
+    if not assoc_response.ok:
+        print(f"❌ Erro ao associar nota à empresa {company_id}: {assoc_response.text}")
     else:
-        print(f"📝 Nota criada com sucesso para a empresa {company_id}.")
+        print(f"📝 Nota associada com sucesso à empresa {company_id}.")
 
 def search_recent_closed_deals():
     url = f"{BASE_URL}/crm/v3/objects/deals/search"

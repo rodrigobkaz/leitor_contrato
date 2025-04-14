@@ -1,4 +1,8 @@
-from leitor_contrato.hubspot_client import search_recent_closed_deals as get_deals
+from leitor_contrato.hubspot_client import (
+    search_recent_closed_deals as get_deals,
+    get_associated_company_id,
+    create_note_for_company
+)
 from leitor_contrato.processor import process_contract_from_deal
 
 def main():
@@ -17,6 +21,14 @@ def main():
 
         if result:
             print_relatorio_contrato(deal["id"], result)
+
+            # Obtem empresa associada
+            company_id = get_associated_company_id(deal["id"])
+            if company_id:
+                print(f"🏢 Empresa associada ao deal: {company_id}")
+                create_note_for_company(company_id, result)
+            else:
+                print("⚠️ Empresa associada não encontrada.")
         else:
             print("⚠️ Falha ao processar este contrato.")
 
@@ -28,7 +40,7 @@ def print_relatorio_contrato(deal_id, info):
     print(f"✅ Reajuste.................: {info.get('reajuste') or 'não encontrado'}")
     print(f"✅ Inadimplência............: {info.get('inadimplencia') or 'não encontrada'}")
     print(f"✅ Aviso prévio.............: {info.get('prazo_cancelamento') or 'não encontrado'}")
-    
+
     print("\n📝 Trecho relevante:")
     print(info.get('snippet', '[sem trecho]'))
     print("-" * 80)

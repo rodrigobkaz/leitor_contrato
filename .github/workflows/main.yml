@@ -1,7 +1,9 @@
 name: Rodar Leitor de Contrato
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *'  # Todos os dias às 12:00 UTC
+  workflow_dispatch:       # Ainda permite rodar manualmente também
 
 jobs:
   run-script:
@@ -11,20 +13,20 @@ jobs:
       HUBSPOT_API_KEY: ${{ secrets.HUBSPOT_API_KEY }}
 
     steps:
-    - name: Checkout do código
-      uses: actions/checkout@v3
+      - name: Checkout do código
+        uses: actions/checkout@v3
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Instalar dependências
-      run: |
-        pip install -r leitor_contrato/requirements.txt
+      - name: Instalar dependências
+        run: |
+          pip install -r leitor_contrato/requirements.txt
 
-    - name: Baixar modelo spaCy pt_core_news_sm
-      run: python -m spacy download pt_core_news_sm
+      - name: Baixar modelo spaCy pt_core_news_sm
+        run: python -m spacy download pt_core_news_sm
 
-    - name: Executar main.py
-      run: python leitor_contrato/main.py
+      - name: Executar main.py
+        run: python leitor_contrato/main.py

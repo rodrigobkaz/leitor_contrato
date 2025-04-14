@@ -17,7 +17,7 @@ def get_file_download_url(file_id):
     url = f"{BASE_URL}/files/v3/files/{file_id}/signed-url"
     response = requests.get(url, headers=HEADERS)
     if not response.ok:
-        print(f"Erro ao obter signed URL do arquivo {file_id}: {response.text}")
+        print(f"Erro ao obter signed URL do arquivo {file_id}: {response.status_code}, {response.text}")
         return None
     data = response.json()
     return data.get("url")
@@ -52,8 +52,8 @@ Trecho do contrato:
     note_id = response.json().get("id")
     print(f"✅ Nota criada com ID: {note_id}")
 
-    # Associar nota à empresa (empresa -> nota)
-    assoc_url = f"{BASE_URL}/crm/v4/objects/notes/{note_id}/associations/companies/{company_id}/202"
+    # ✅ Endpoint correto para associação: API v4
+    assoc_url = f"{BASE_URL}/crm/v4/associations/notes/{note_id}/to/companies/{company_id}/type/202"
     assoc_response = requests.put(assoc_url, headers=HEADERS)
 
     if not assoc_response.ok:
